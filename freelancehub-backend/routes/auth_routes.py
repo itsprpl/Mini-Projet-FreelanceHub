@@ -1,39 +1,57 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from app import mongo, bcrypt
 from utils.jwt_utils import generate_token
+from bson import ObjectId
 
-auth_bp = Blueprint("auth", __name__)
+auth_bp = Blueprint('auth', __name__)
 
-# REGISTER
-@auth_bp.route("/register", methods=["POST"])
+
+@auth_bp.route('/register', methods=['POST'])
 def register():
-    data = request.json
+    data = request.get_json() or {}
+    email = data.get('email')
+    password = data.get('password')
+    role = data.get('role', 'client')  # freelancer, client, admin
 
-    hashed_pw = bcrypt.generate_password_hash(
-        data["password"]
-    ).decode("utf-8")
+    if not email or not password:
+        return jsonify({'msg': 'email and password required'}), 400
 
+    if mongo.db.users.find_one({'email': email}):
+        return jsonify({'msg': 'email already registered'}), 409
+
+    pw_hash = bcrypt.generate_password_hash(password).decode('utf-8')
     user = {
-        "email": data["email"],
-        "password": hashed_pw,
-        "role": data.get("role", "client"),  # freelancer/client/admin
-        "status": "active"
+        'email': email,
+        'password': pw_hash,
+        'role': role,
+        'status': 'active',
     }
-
-    mongo.db.users.insert_one(user)
-    return jsonify({"msg": "User created"}), 201
-
-
-# LOGIN
-@auth_bp.route("/login", methods=["POST"])
-def login():
-    data = request.json
-    user = mongo.db.users.find_one({"email": data["email"]})
-
-    if not user or not bcrypt.check_password_hash(
-        user["password"], data["password"]
-    ):
-        return jsonify({"msg": "Invalid credentials"}), 401
+    res = mongo.db.users.insert_one(user)
+    user['_id'] = res.inserted_id
 
     token = generate_token(user)
-    return jsonify({"token": token})
+    return jsonify({'msg': 'registered', 'token': token}), 201
+
+
+@auth_bp.route('/login', methods=['POST'])
+def login():
+    data = request.get_json() or {}
+    email = data.get('email')
+    password = data.get('password')
+
+    if not email or not password:
+        return jsonify({'msg': 'email and password required'}), 400
+
+    user = mongo.db.users.find_one({'email': email})
+    if not user:
+        return jsonify({'msg': 'invalid credentials'}), 401
+
+    if not bcrypt.check_password_hash(user['password'], password):
+        return jsonify({'msg': 'invalid credentials'}), 401
+
+    # status check
+    if user.get('status') == 'blocked':
+        return jsonify({'msg': 'account blocked'}), 403
+
+    token = generate_token(user)
+    return jsonify({'msg': 'logged in', 'token': token})
