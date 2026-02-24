@@ -1,7 +1,7 @@
 import os
 from flask import Blueprint, request, jsonify, current_app, send_from_directory
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from app import mongo
+from extensions import mongo
 from bson import ObjectId
 
 user_bp = Blueprint('users', __name__)

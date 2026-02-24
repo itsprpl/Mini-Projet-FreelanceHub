@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
 from utils.decorators import admin_required
-from app import mongo
+from extensions import mongo
 from bson import ObjectId
 
 admin_bp = Blueprint('admin', __name__)

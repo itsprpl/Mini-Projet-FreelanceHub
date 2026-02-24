@@ -2,7 +2,7 @@ import os
 import uuid
 from flask import Blueprint, request, jsonify, current_app, send_from_directory
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from app import mongo
+from extensions import mongo
 from bson import ObjectId
 
 store_bp = Blueprint('store', __name__)

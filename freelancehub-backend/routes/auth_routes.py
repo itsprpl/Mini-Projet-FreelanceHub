@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify, current_app
-from app import mongo, bcrypt
+from extensions import mongo, bcrypt
 from utils.jwt_utils import generate_token
 from bson import ObjectId
 

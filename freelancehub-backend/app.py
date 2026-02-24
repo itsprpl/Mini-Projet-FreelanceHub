@@ -1,13 +1,7 @@
 from flask import Flask, jsonify
-from flask_pymongo import PyMongo
-from flask_bcrypt import Bcrypt
-from flask_jwt_extended import JWTManager
 from flask_cors import CORS
 from config import Config
-
-mongo = PyMongo()
-bcrypt = Bcrypt()
-jwt = JWTManager()
+from extensions import mongo, bcrypt, jwt
 
 
 def create_app():
@@ -15,11 +9,13 @@ def create_app():
     app.config.from_object(Config)
 
     CORS(app)
+
+    # init extensions
     mongo.init_app(app)
     bcrypt.init_app(app)
     jwt.init_app(app)
 
-    # Register blueprints
+    # register routes
     from routes.auth_routes import auth_bp
     from routes.user_routes import user_bp
     from routes.gig_routes import gig_bp
@@ -45,4 +41,4 @@ def create_app():
 
 if __name__ == '__main__':
     app = create_app()
-    app.run(host='0.0.0.0', port=5000)
+    app.run(debug=True)
