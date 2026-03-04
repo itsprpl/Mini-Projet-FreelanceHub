@@ -7,6 +7,12 @@ from bson import ObjectId
 user_bp = Blueprint('users', __name__)
 
 
+'''
+GET /api/users/me
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc3MjAxMjg1NCwianRpIjoiY2ZiMGVjOWQtNzk4NS00M2MwLWFkM2UtMzBiMzdiNjdjZTRhIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjY5OWVjNTBhNjQzN2YwNDIzNWFkOTU3ZiIsIm5iZiI6MTc3MjAxMjg1NCwiY3NyZiI6IjllMWJmNjExLWFhNzAtNDI0Ny1iNjg1LTk4MTdiMTY5MjVlNyIsImV4cCI6MTc3MjAxMzc1NCwicm9sZSI6ImZyZWVsYW5jZXIifQ.VappwIDZy6lfbEuF4u9DubZixuYFGvWq6CDsmdn8AHw
+'''
+
+
 @user_bp.route('/me', methods=['GET'])
 @jwt_required()
 def me():
@@ -18,6 +24,26 @@ def me():
     return jsonify(user)
 
 
+
+'''
+
+POST /api/users/profile
+
+request.form = {
+  "bio": "Backend developer",
+  "skills": "Python,Flask,MongoDB",
+  "portfolio": "https://github.com/me"
+}
+
+
+curl -X POST http://localhost:5000/profile \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -F "bio=Backend developer" \
+  -F "skills=Python,Flask,MongoDB" \
+  -F "portfolio=https://github.com/me" \
+  -F "cv=@/path/to/cv.pdf"
+
+'''
 @user_bp.route('/profile', methods=['POST'])
 @jwt_required()
 def create_profile():
@@ -45,6 +71,8 @@ def create_profile():
 
     mongo.db.profiles.insert_one(profile)
     return jsonify({'msg': 'profile submitted'})
+
+
 
 
 @user_bp.route('/cv/<filename>', methods=['GET'])

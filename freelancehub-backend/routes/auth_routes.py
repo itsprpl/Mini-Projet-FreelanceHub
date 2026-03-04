@@ -2,9 +2,23 @@ from flask import Blueprint, request, jsonify, current_app
 from extensions import mongo, bcrypt
 from utils.jwt_utils import generate_token
 from bson import ObjectId
+from flask_cors import CORS
 
 auth_bp = Blueprint('auth', __name__)
+CORS(auth_bp)  # enable CORS specifically for this blueprint
 
+
+'''
+
+POST /api/auth/register
+
+{
+    "email": "test@mail.com",
+    "password": "123456",
+    "role": "freelancer"
+}
+
+'''
 
 @auth_bp.route('/register', methods=['POST'])
 def register():
@@ -32,6 +46,20 @@ def register():
     token = generate_token(user)
     return jsonify({'msg': 'registered', 'token': token}), 201
 
+
+
+
+'''
+
+POST /api/auth/login
+
+{
+    "email": "test@mail.com",
+    "password": "123456",
+    "role": "freelancer"
+}
+
+'''
 
 @auth_bp.route('/login', methods=['POST'])
 def login():
